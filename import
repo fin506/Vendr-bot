@@ -1,0 +1,50 @@
+// Import the required libraries
+const { Client, GatewayIntentBits } = require('discord.js');
+const axios = require('axios'); // Library to make HTTP requests
+
+// Create a new client instance
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+
+// Replace with your actual Discord Bot Token
+const BOT_TOKEN = 'YOUR_BOT_TOKEN';
+
+// Your API URL and key
+const API_URL = 'https://yourapi.com/endpoint';
+const API_KEY = 'YOUR_API_KEY'; // Optional, if your API requires an authentication key
+
+// Bot ready event
+client.once('ready', () => {
+    console.log(`Bot is logged in as ${client.user.tag}`);
+});
+
+// Handle messages
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return; // Ignore messages from other bots
+
+    // Example command to fetch data from your API
+    if (message.content.toLowerCase().startsWith('!vendr')) {
+        const query = message.content.slice('!vendr'.length).trim(); // Extract query from the command
+        if (!query) {
+            message.channel.send('Please provide a query after the command.');
+            return;
+        }
+
+        try {
+            // Make a GET request to your API
+            const response = await axios.get(API_URL, {
+                params: { query }, // Send query as a parameter
+                headers: { Authorization: `Bearer ${API_KEY}` }, // Optional, if API requires auth
+            });
+
+            // Process and send the response back to Discord
+            const data = response.data;
+            message.channel.send(`API Response: ${JSON.stringify(data)}`);
+        } catch (error) {
+            console.error(error);
+            message.channel.send('There was an error fetching data from the API. Please try again later.');
+        }
+    }
+});
+
+// Log the bot in
+client.login(BOT_TOKEN);
